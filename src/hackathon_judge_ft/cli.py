@@ -69,7 +69,7 @@ def evaluate(
     console.print(f"  test: {len(test_ds)} examples ({len(test_pairs)} unique pairs)")
 
     console.print(f"Running inference with {model} + adapter {adapter}...")
-    metrics = eval_mod.run(test_ds, test_pairs, str(adapter), model_name=model, model_tag=model_tag)
+    metrics = eval_mod.run(test_ds, test_pairs, str(adapter.resolve()), model_name=model, model_tag=model_tag)
 
     typer.echo(f"frontier agreement:   {metrics['frontier_agreement']*100:.1f}%  ({metrics['n_test']} examples)")
     typer.echo(f"position consistency: {metrics['position_consistency']*100:.0f}%  ({metrics['n_pairs']} pairs)")
