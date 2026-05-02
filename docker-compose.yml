@@ -1,0 +1,26 @@
+x-base: &base
+  build: .
+  working_dir: /workspace
+  ipc: host
+  shm_size: "16gb"
+  environment:
+    HF_TOKEN: ${HF_TOKEN:-}
+  volumes:
+    - ./:/workspace
+    - ${HF_HOME:-~/.cache/huggingface}:/root/.cache/huggingface
+  deploy:
+    resources:
+      reservations:
+        devices:
+          - driver: nvidia
+            count: all
+            capabilities: [gpu]
+
+services:
+  train:
+    <<: *base
+    command: ["train", "--hackathon", "${HACKATHON:-}", "--epochs", "${EPOCHS:-1}"]
+
+  evaluate:
+    <<: *base
+    command: ["evaluate", "${ADAPTER:-./hackathon_judge_lora}"]
