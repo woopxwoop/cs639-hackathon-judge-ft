@@ -11,8 +11,8 @@ def run(
     epochs: int = 1,
     r: int = 32,
 ) -> None:
-    from trl import SFTConfig, SFTTrainer
     from unsloth import FastModel
+    from trl import SFTConfig, SFTTrainer
 
     model, tokenizer = FastModel.from_pretrained(
         model_name=model_name,
@@ -54,7 +54,6 @@ def run(
         report_to="none",
         fp16=not torch.cuda.is_bf16_supported(),
         bf16=torch.cuda.is_bf16_supported(),
-        max_seq_length=8192,
         dataset_text_field="text",
     )
 
@@ -63,6 +62,7 @@ def run(
         tokenizer=tokenizer,
         args=training_args,
         train_dataset=train_tokenized,
+        max_seq_length=8192,
     )
 
     trainer.train()

@@ -33,8 +33,8 @@ def run(
     model_tag: str = "Qwen/Qwen3-4B-sft",
 ) -> dict:
     import torch
-    from peft import PeftModel
     from unsloth import FastModel
+    from peft import PeftModel
 
     model, tokenizer = FastModel.from_pretrained(
         model_name=model_name,
