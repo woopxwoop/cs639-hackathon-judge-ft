@@ -11,6 +11,15 @@ def run(
     epochs: int = 1,
     r: int = 32,
 ) -> None:
+    # unsloth_zoo generates Linear_peft_forward.py that references VARIANT_KWARG_KEYS
+    # from peft's module scope but forgets to import it — inject it into builtins as a workaround
+    try:
+        import builtins
+        from peft.tuners.lora.layer import VARIANT_KWARG_KEYS
+        builtins.VARIANT_KWARG_KEYS = VARIANT_KWARG_KEYS
+    except ImportError:
+        pass
+
     from unsloth import FastModel
     from trl import SFTConfig, SFTTrainer
 
