@@ -34,8 +34,8 @@ def run(
     test_dataset: Dataset,
     test_pairs: set,
     adapter_path: str,
-    model_name: str = "unsloth/Qwen3-4B",
-    model_tag: str = "Qwen/Qwen3-4B-sft",
+    model_name: str = "unsloth/Qwen3.5-4B",
+    model_tag: str = "Qwen/Qwen3.5-4B-sft",
 ) -> dict:
     import torch
     from unsloth import FastModel

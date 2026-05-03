@@ -6,11 +6,11 @@ from datasets import Dataset
 
 def run(
     train_dataset: Dataset,
-    model_name: str = "unsloth/Qwen3-4B",
+    model_name: str = "unsloth/Qwen3.5-4B",
     output_dir: str = "./hackathon_judge_lora",
     epochs: int = 3,
     r: int = 32,
-    max_seq_length: int = 8192,
+    max_seq_length: int = 16384,
     batch_size: int = 32,
     gradient_accumulation_steps: int = 1,
     learning_rate: float = 3e-4,
@@ -44,15 +44,22 @@ def run(
     )
 
     def preprocess(example):
+        text = tokenizer.apply_chat_template(
+            example["messages"],
+            tokenize=False,
+            add_generation_prompt=False,
+        )
         return {
-            "text": tokenizer.apply_chat_template(
-                example["messages"],
-                tokenize=False,
-                add_generation_prompt=False,
-            )
+            "text": text,
+            "n_tokens": len(tokenizer(text, add_special_tokens=False)["input_ids"]),
         }
 
     train_tokenized = train_dataset.map(preprocess, num_proc=1)
+    n_before_filter = len(train_tokenized)
+    train_tokenized = train_tokenized.filter(lambda r: r["n_tokens"] <= max_seq_length)
+    n_dropped = n_before_filter - len(train_tokenized)
+    if n_dropped:
+        print(f"  dropped {n_dropped} training examples longer than {max_seq_length} tokens")
 
     training_args = SFTConfig(
         output_dir=output_dir,

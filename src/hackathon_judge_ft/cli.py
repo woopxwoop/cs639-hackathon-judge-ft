@@ -9,7 +9,7 @@ from rich.console import Console
 app = typer.Typer(
     no_args_is_help=True,
     add_completion=False,
-    help="Fine-tune and evaluate a small Qwen3 model as a hackathon judge.",
+    help="Fine-tune and evaluate a small Qwen3.5 model as a hackathon judge.",
 )
 
 console = Console()
@@ -21,18 +21,18 @@ def train(
         None, "--hackathon", "-h",
         help="Single hackathon config (e.g. treehacks-2026). Default: all hackathons.",
     ),
-    model: str = typer.Option("unsloth/Qwen3-4B", "--model"),
+    model: str = typer.Option("unsloth/Qwen3.5-4B", "--model"),
     epochs: int = typer.Option(3, "--epochs", "-e"),
     r: int = typer.Option(32, "--r", help="LoRA rank"),
     batch_size: int = typer.Option(32, "--batch-size"),
     gradient_accumulation_steps: int = typer.Option(1, "--gradient-accumulation-steps"),
     learning_rate: float = typer.Option(3e-4, "--learning-rate", "--lr"),
-    max_seq_length: int = typer.Option(8192, "--max-seq-length"),
+    max_seq_length: int = typer.Option(16384, "--max-seq-length"),
     output: Path = typer.Option(Path("./hackathon_judge_lora"), "--output", "-o"),
     test_size: float = typer.Option(0.2, "--test-size"),
     seed: int = typer.Option(42, "--seed"),
 ) -> None:
-    """Load frontier judgments, fine-tune Qwen3 with LoRA, save adapter weights."""
+    """Load frontier judgments, fine-tune Qwen3.5 with LoRA, save adapter weights."""
     from hackathon_judge_ft import data as data_mod
     from hackathon_judge_ft import train as train_mod
 
@@ -69,8 +69,8 @@ def evaluate(
         None, "--hackathon", "-h",
         help="Single hackathon config (must match what was used during train).",
     ),
-    model: str = typer.Option("unsloth/Qwen3-4B", "--model"),
-    model_tag: str = typer.Option("Qwen/Qwen3-4B-sft", "--model-tag", help="Model name written to output parquet"),
+    model: str = typer.Option("unsloth/Qwen3.5-4B", "--model"),
+    model_tag: str = typer.Option("Qwen/Qwen3.5-4B-sft", "--model-tag", help="Model name written to output parquet"),
     output: Optional[Path] = typer.Option(None, "--output", "-o", help="Save judgments parquet to this path"),
     test_size: float = typer.Option(0.2, "--test-size"),
     seed: int = typer.Option(42, "--seed"),
