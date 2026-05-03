@@ -12,17 +12,24 @@ from datasets import Dataset
 SAMPLING_PARAMS = {"temperature": 0.7, "top_p": 0.9, "max_tokens": 8192}
 
 
+VERDICT_RE = re.compile(r"VERDICT\s*:\s*(A|B|TIE)\b", re.IGNORECASE)
+
+
 def parse_verdict(response: str) -> str | None:
     if "</think>" in response:
         response = response.split("</think>")[-1]
-    match = re.search(r"VERDICT:\s*([AB]|TIE)", response, re.IGNORECASE)
-    if match:
-        return match.group(1).upper()
-    if re.search(r"\bProject\s+A\b", response, re.IGNORECASE):
-        return "A"
-    if re.search(r"\bProject\s+B\b", response, re.IGNORECASE):
-        return "B"
-    return None
+    last = None
+    for m in VERDICT_RE.finditer(response):
+        last = m
+    if last is None:
+        # fallback for truncated outputs
+        if re.search(r"\bProject\s+A\b", response, re.IGNORECASE):
+            return "A"
+        if re.search(r"\bProject\s+B\b", response, re.IGNORECASE):
+            return "B"
+        return None
+    v = last.group(1).upper()
+    return "tie" if v == "TIE" else v
 
 
 def run(

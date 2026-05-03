@@ -9,5 +9,7 @@ print(f"sample roles: {[m['role'] for m in train_ds[0]['messages']]}")
 
 assert parse_verdict("<think>...</think>\nVERDICT: A") == "A"
 assert parse_verdict("VERDICT: B") == "B"
+assert parse_verdict("VERDICT: TIE") == "tie"
+assert parse_verdict("VERDICT: A\nVERDICT: B") == "B"  # last match wins
 assert parse_verdict("nothing") is None
 print("all assertions passed")
