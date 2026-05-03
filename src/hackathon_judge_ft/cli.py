@@ -24,7 +24,7 @@ def train(
     model: str = typer.Option("unsloth/Qwen3.5-4B", "--model"),
     epochs: int = typer.Option(3, "--epochs", "-e"),
     r: int = typer.Option(32, "--r", help="LoRA rank"),
-    batch_size: int = typer.Option(12, "--batch-size"),
+    batch_size: int = typer.Option(4, "--batch-size"),
     gradient_accumulation_steps: int = typer.Option(1, "--gradient-accumulation-steps"),
     learning_rate: float = typer.Option(3e-4, "--learning-rate", "--lr"),
     max_seq_length: int = typer.Option(12288, "--max-seq-length"),
