@@ -11,6 +11,8 @@ def run(
     epochs: int = 3,
     r: int = 32,
     max_seq_length: int = 8192,
+    batch_size: int = 2,
+    gradient_accumulation_steps: int = 4,
 ) -> None:
     # unsloth_zoo generates Linear_peft_forward.py that references VARIANT_KWARG_KEYS
     # from peft's module scope but forgets to import it — inject it into builtins as a workaround
@@ -56,8 +58,8 @@ def run(
         num_train_epochs=epochs,
         save_strategy="epoch",
         gradient_checkpointing=True,
-        per_device_train_batch_size=1,
-        gradient_accumulation_steps=8,
+        per_device_train_batch_size=batch_size,
+        gradient_accumulation_steps=gradient_accumulation_steps,
         learning_rate=2e-4,
         warmup_steps=10,
         logging_steps=5,
