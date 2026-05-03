@@ -72,7 +72,7 @@ def run(
     from liger_kernel.transformers import apply_liger_kernel_to_qwen3_5
 
     apply_liger_kernel_to_qwen3_5(
-        rope=True,
+        rope=False,
         rms_norm=True,
         swiglu=True,
         fused_linear_cross_entropy=True,
