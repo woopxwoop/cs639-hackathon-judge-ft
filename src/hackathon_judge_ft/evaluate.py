@@ -77,13 +77,15 @@ def run(
 
     rows = []
     frontier_correct = 0
+    n_total = len(test_dataset)
 
-    for ex in test_dataset:
+    for i, ex in enumerate(test_dataset):
         prompt_messages = [m for m in ex["messages"] if m["role"] != "assistant"]
         response, predicted, n_prompt, n_completion, latency, finish_reason = run_inference(prompt_messages)
         verdict = predicted if predicted is not None else "invalid"
         frontier_match = verdict == ex["answer"]
         frontier_correct += int(frontier_match)
+        print(f"  [{i+1}/{n_total}] {ex['pair_id'][:8]} pos={ex['position']}  {verdict} vs {ex['answer']}  {'✓' if frontier_match else '✗'}  ({latency:.1f}s)", flush=True)
         rows.append({
             "messages":          list(prompt_messages) + [{"role": "assistant", "content": response}],
             "judgment_id":       ex["judgment_id"],
