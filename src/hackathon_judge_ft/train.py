@@ -16,6 +16,7 @@ def run(
     batch_size: int = 32,
     gradient_accumulation_steps: int = 1,
     learning_rate: float = 3e-4,
+    seed: int = 42,
 ) -> None:
     from unsloth import FastModel
     from trl import SFTConfig, SFTTrainer
@@ -65,6 +66,8 @@ def run(
 
     training_args = SFTConfig(
         output_dir=output_dir,
+        seed=seed,
+        data_seed=seed,
         num_train_epochs=epochs,
         save_strategy="epoch",
         gradient_checkpointing=True,

@@ -57,6 +57,7 @@ def train(
         gradient_accumulation_steps=gradient_accumulation_steps,
         learning_rate=learning_rate,
         max_seq_length=max_seq_length,
+        seed=seed,
     )
 
     typer.echo(f"saved adapter → {output}")
