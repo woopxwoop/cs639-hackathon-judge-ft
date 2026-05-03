@@ -24,6 +24,7 @@ def train(
     model: str = typer.Option("unsloth/Qwen3-4B", "--model"),
     epochs: int = typer.Option(1, "--epochs", "-e"),
     r: int = typer.Option(32, "--r", help="LoRA rank"),
+    max_seq_length: int = typer.Option(8192, "--max-seq-length"),
     output: Path = typer.Option(Path("./hackathon_judge_lora"), "--output", "-o"),
     test_size: float = typer.Option(0.2, "--test-size"),
     seed: int = typer.Option(42, "--seed"),
@@ -41,7 +42,7 @@ def train(
     console.print(f"  train: {len(train_ds)} examples ({len(train_pairs)} unique pairs)")
 
     console.print(f"Training {model} | LoRA r={r} | {epochs} epoch(s)...")
-    train_mod.run(train_ds, model_name=model, output_dir=str(output), epochs=epochs, r=r)
+    train_mod.run(train_ds, model_name=model, output_dir=str(output), epochs=epochs, r=r, max_seq_length=max_seq_length)
 
     typer.echo(f"saved adapter → {output}")
 

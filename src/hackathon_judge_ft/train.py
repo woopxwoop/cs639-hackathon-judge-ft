@@ -10,6 +10,7 @@ def run(
     output_dir: str = "./hackathon_judge_lora",
     epochs: int = 1,
     r: int = 32,
+    max_seq_length: int = 8192,
 ) -> None:
     # unsloth_zoo generates Linear_peft_forward.py that references VARIANT_KWARG_KEYS
     # from peft's module scope but forgets to import it — inject it into builtins as a workaround
@@ -25,7 +26,7 @@ def run(
 
     model, tokenizer = FastModel.from_pretrained(
         model_name=model_name,
-        max_seq_length=8192,
+        max_seq_length=max_seq_length,
         load_in_4bit=True,
         full_finetuning=False,
     )
@@ -35,7 +36,7 @@ def run(
         r=r,
         lora_alpha=r * 2,
         target_modules=["q_proj", "k_proj", "v_proj", "o_proj"],
-        lora_dropout=0.05,
+        lora_dropout=0,
         use_gradient_checkpointing="unsloth",
     )
 
@@ -71,7 +72,7 @@ def run(
         tokenizer=tokenizer,
         args=training_args,
         train_dataset=train_tokenized,
-        max_seq_length=8192,
+        max_seq_length=max_seq_length,
     )
 
     trainer.train()
