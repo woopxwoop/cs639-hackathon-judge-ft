@@ -97,7 +97,7 @@ def run(
     model = get_peft_model(model, peft_config)
     model.enable_input_require_grads()
     model.gradient_checkpointing_enable(
-        gradient_checkpointing_kwargs={"use_reentrant": False}
+        gradient_checkpointing_kwargs={"use_reentrant": True}
     )
     model.print_trainable_parameters()
 
