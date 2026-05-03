@@ -9,6 +9,8 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 from datasets import Dataset
 
+from hackathon_judge_ft.config import ENABLE_THINKING
+
 SAMPLING_PARAMS = {"temperature": 0.7, "top_p": 0.9, "max_tokens": 8192}
 
 VERDICT_RE = re.compile(r"VERDICT\s*:\s*(A|B|TIE)\b", re.IGNORECASE)
@@ -56,7 +58,7 @@ def run(
             prompt_messages,
             tokenize=False,
             add_generation_prompt=True,
-            enable_thinking=True,
+            enable_thinking=ENABLE_THINKING,
         )
         inputs = tokenizer(text, return_tensors="pt").to(model.device)
         n_prompt = inputs.input_ids.shape[1]

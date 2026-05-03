@@ -3,6 +3,8 @@ from __future__ import annotations
 import torch
 from datasets import Dataset
 
+from hackathon_judge_ft.config import ENABLE_THINKING
+
 
 def run(
     train_dataset: Dataset,
@@ -48,6 +50,7 @@ def run(
             example["messages"],
             tokenize=False,
             add_generation_prompt=False,
+            enable_thinking=ENABLE_THINKING,
         )
         return {
             "n_tokens": len(tokenizer(text, add_special_tokens=False)["input_ids"]),
@@ -75,6 +78,7 @@ def run(
         bf16=torch.cuda.is_bf16_supported(),
         assistant_only_loss=True,
         max_length=max_seq_length,
+        dataset_kwargs={"chat_template_kwargs": {"enable_thinking": ENABLE_THINKING}},
     )
 
     trainer = SFTTrainer(
