@@ -52,7 +52,7 @@ def run(
             "up_proj",
             "down_proj",
         ],
-        lora_dropout=0.05,
+        lora_dropout=0,
         use_gradient_checkpointing="unsloth",
     )
 
