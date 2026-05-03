@@ -8,7 +8,7 @@ def run(
     train_dataset: Dataset,
     model_name: str = "unsloth/Qwen3-4B",
     output_dir: str = "./hackathon_judge_lora",
-    epochs: int = 1,
+    epochs: int = 3,
     r: int = 32,
     max_seq_length: int = 8192,
 ) -> None:
