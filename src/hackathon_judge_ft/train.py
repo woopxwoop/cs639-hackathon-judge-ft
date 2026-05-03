@@ -13,7 +13,7 @@ def run(
     epochs: int = 3,
     r: int = 32,
     max_seq_length: int = 16384,
-    batch_size: int = 32,
+    batch_size: int = 12,
     gradient_accumulation_steps: int = 1,
     learning_rate: float = 3e-4,
     seed: int = 42,
