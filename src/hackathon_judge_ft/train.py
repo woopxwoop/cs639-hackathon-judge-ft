@@ -69,6 +69,15 @@ def run(
 
     from transformers import AutoModelForCausalLM, AutoTokenizer
     from peft import LoraConfig, get_peft_model
+    from liger_kernel.transformers import apply_liger_kernel_to_qwen3_5
+
+    apply_liger_kernel_to_qwen3_5(
+        rope=True,
+        rms_norm=True,
+        swiglu=True,
+        fused_linear_cross_entropy=True,
+        cross_entropy=False,
+    )
 
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     model = AutoModelForCausalLM.from_pretrained(
@@ -143,7 +152,8 @@ def run(
         fp16=not torch.cuda.is_bf16_supported(),
         bf16=torch.cuda.is_bf16_supported(),
         remove_unused_columns=False,
-        use_liger_kernel=True,
+        dataloader_num_workers=4,
+        dataloader_pin_memory=True,
     )
 
     trainer = Trainer(
