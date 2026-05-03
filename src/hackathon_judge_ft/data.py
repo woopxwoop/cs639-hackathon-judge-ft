@@ -49,32 +49,36 @@ def _winner_project_id(row: dict) -> str:
     return row["project_a_id"] if row["verdict"] == "A" else row["project_b_id"]
 
 
-def _position_consistent_pair_ids(ds: Dataset) -> set[str]:
-    by_pair: dict[str, dict[str, str]] = {}
-    for row in ds:
-        by_pair.setdefault(row["pair_id"], {})[row["position"]] = _winner_project_id(row)
-
-    return {
-        pair_id
-        for pair_id, winners_by_position in by_pair.items()
-        if winners_by_position.get("ab") is not None
-        and winners_by_position.get("ab") == winners_by_position.get("ba")
-    }
-
-
 def split(
     ds: Dataset,
     test_size: float = 0.2,
     seed: int = 42,
 ) -> tuple[Dataset, Dataset, set, set]:
     """Split by pair_id so both position-swapped rows land in the same split."""
-    trainable = ds.filter(
-        lambda r: r["verdict"] in ("A", "B")
-        and VERDICT_RE.search(r["messages"][2]["content"]) is not None
-    )
-    n_pairs_before_bias_filter = len(set(trainable["pair_id"]))
-    consistent_pairs = _position_consistent_pair_ids(trainable)
-    trainable = trainable.filter(lambda r: r["pair_id"] in consistent_pairs)
+    candidate_indices: list[int] = []
+    winners_by_pair: dict[str, dict[str, str]] = {}
+
+    for i, row in enumerate(ds):
+        if row["verdict"] not in ("A", "B"):
+            continue
+        if VERDICT_RE.search(row["messages"][2]["content"]) is None:
+            continue
+
+        candidate_indices.append(i)
+        winners_by_pair.setdefault(row["pair_id"], {})[row["position"]] = _winner_project_id(row)
+
+    n_pairs_before_bias_filter = len(winners_by_pair)
+    consistent_pairs = {
+        pair_id
+        for pair_id, winners_by_position in winners_by_pair.items()
+        if winners_by_position.get("ab") is not None
+        and winners_by_position.get("ab") == winners_by_position.get("ba")
+    }
+    keep_indices = [
+        i for i in candidate_indices
+        if ds[i]["pair_id"] in consistent_pairs
+    ]
+    trainable = ds.select(keep_indices)
     n_pairs_dropped = n_pairs_before_bias_filter - len(consistent_pairs)
     if n_pairs_dropped:
         print(f"  dropped {n_pairs_dropped} position-inconsistent pairs")
@@ -90,7 +94,15 @@ def split(
     # rename verdict → answer so training/eval code has a stable field name
     trainable = trainable.map(lambda r: {"answer": r["verdict"]})
 
-    train_ds = trainable.filter(lambda r: r["pair_id"] in train_pairs)
-    test_ds = trainable.filter(lambda r: r["pair_id"] in test_pairs)
+    train_indices: list[int] = []
+    test_indices: list[int] = []
+    for i, row in enumerate(trainable):
+        if row["pair_id"] in train_pairs:
+            train_indices.append(i)
+        elif row["pair_id"] in test_pairs:
+            test_indices.append(i)
+
+    train_ds = trainable.select(train_indices)
+    test_ds = trainable.select(test_indices)
 
     return train_ds, test_ds, train_pairs, test_pairs
