@@ -9,6 +9,7 @@ dependencies = [
     "datasets>=3.4.1",
     "pyarrow>=17",
     "torch>=2.10,<2.11",
+    "transformers>=5.2.0",
     "peft>=0.12",
     "trl>=0.18.2",
     "unsloth>=2026.4",
