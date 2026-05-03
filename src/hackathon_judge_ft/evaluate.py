@@ -93,6 +93,7 @@ def run(
             "project_a_id":      ex["project_a_id"],
             "project_b_id":      ex["project_b_id"],
             "verdict":           verdict,
+            "frontier_verdict":  ex["answer"],
             "gt_a_result":       ex["gt_a_result"],
             "gt_b_result":       ex["gt_b_result"],
             "model":             model_tag,
@@ -129,7 +130,7 @@ def run(
 
 
 def save_parquet(rows: list[dict], output: Path) -> None:
-    parquet_rows = [{k: v for k, v in r.items() if k != "frontier_match"} for r in rows]
+    parquet_rows = [{k: v for k, v in r.items() if k not in ("frontier_match", "frontier_verdict")} for r in rows]
     table = pa.Table.from_pylist(parquet_rows)
     output.parent.mkdir(parents=True, exist_ok=True)
     pq.write_table(table, output)
