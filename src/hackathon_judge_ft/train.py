@@ -12,11 +12,12 @@ def run(
     output_dir: str = "./hackathon_judge_lora",
     epochs: int = 3,
     r: int = 32,
-    max_seq_length: int = 16384,
+    max_seq_length: int = 12288,
     batch_size: int = 12,
     gradient_accumulation_steps: int = 1,
     learning_rate: float = 3e-4,
     seed: int = 42,
+    num_proc: int = 8,
 ) -> None:
     from unsloth import FastModel
     from trl import SFTConfig, SFTTrainer
@@ -66,7 +67,7 @@ def run(
             "n_tokens": len(tokenizer(text, add_special_tokens=False)["input_ids"]),
         }
 
-    train_tokenized = train_dataset.map(preprocess, num_proc=1)
+    train_tokenized = train_dataset.map(preprocess, num_proc=num_proc)
     n_before_filter = len(train_tokenized)
     train_tokenized = train_tokenized.filter(lambda r: r["n_tokens"] <= max_seq_length)
     n_dropped = n_before_filter - len(train_tokenized)
@@ -82,6 +83,8 @@ def run(
         gradient_checkpointing=True,
         per_device_train_batch_size=batch_size,
         gradient_accumulation_steps=gradient_accumulation_steps,
+        group_by_length=True,
+        length_column_name="n_tokens",
         learning_rate=learning_rate,
         lr_scheduler_type="cosine",
         warmup_ratio=0.03,

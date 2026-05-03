@@ -27,7 +27,8 @@ def train(
     batch_size: int = typer.Option(12, "--batch-size"),
     gradient_accumulation_steps: int = typer.Option(1, "--gradient-accumulation-steps"),
     learning_rate: float = typer.Option(3e-4, "--learning-rate", "--lr"),
-    max_seq_length: int = typer.Option(16384, "--max-seq-length"),
+    max_seq_length: int = typer.Option(12288, "--max-seq-length"),
+    num_proc: int = typer.Option(8, "--num-proc", help="Tokenization/filtering worker processes"),
     output: Path = typer.Option(Path("./hackathon_judge_lora"), "--output", "-o"),
     test_size: float = typer.Option(0.2, "--test-size"),
     seed: int = typer.Option(42, "--seed"),
@@ -58,6 +59,7 @@ def train(
         learning_rate=learning_rate,
         max_seq_length=max_seq_length,
         seed=seed,
+        num_proc=num_proc,
     )
 
     typer.echo(f"saved adapter → {output}")

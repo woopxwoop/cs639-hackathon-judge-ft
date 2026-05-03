@@ -18,7 +18,7 @@ ft train
 ft train --hackathon treehacks-2026
 
 # More options
-ft train --hackathon treehacks-2026 --epochs 2 --batch-size 12 --gradient-accumulation-steps 1 --lr 3e-4 --max-seq-length 16384 --output ./my_adapter
+ft train --hackathon treehacks-2026 --epochs 2 --batch-size 12 --gradient-accumulation-steps 1 --lr 3e-4 --max-seq-length 12288 --num-proc 8 --output ./my_adapter
 
 # Evaluate a saved adapter
 ft evaluate ./hackathon_judge_lora
@@ -39,7 +39,7 @@ Use the same `--hackathon`, `--test-size`, and `--seed` for both `train` and `ev
 ```bash
 docker compose build
 HF_TOKEN=<token> docker compose run --rm train
-HF_TOKEN=<token> HACKATHON=treehacks-2026 EPOCHS=2 BATCH_SIZE=12 GRAD_ACCUM=1 LR=3e-4 MAX_SEQ_LENGTH=16384 docker compose run --rm train
+HF_TOKEN=<token> HACKATHON=treehacks-2026 EPOCHS=2 BATCH_SIZE=12 GRAD_ACCUM=1 LR=3e-4 MAX_SEQ_LENGTH=12288 NUM_PROC=8 docker compose run --rm train
 HF_TOKEN=<token> docker compose run --rm evaluate evaluate ./hackathon_judge_lora --output ./judgments_sft.parquet
 ```
 
