@@ -25,7 +25,7 @@ def train(
     epochs: int = typer.Option(3, "--epochs", "-e"),
     r: int = typer.Option(32, "--r", help="LoRA rank"),
     batch_size: int = typer.Option(4, "--batch-size"),
-    gradient_accumulation_steps: int = typer.Option(1, "--gradient-accumulation-steps"),
+    gradient_accumulation_steps: int = typer.Option(8, "--gradient-accumulation-steps"),
     learning_rate: float = typer.Option(3e-4, "--learning-rate", "--lr"),
     max_seq_length: int = typer.Option(12288, "--max-seq-length"),
     num_proc: int = typer.Option(8, "--num-proc", help="Tokenization/filtering worker processes"),

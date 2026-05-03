@@ -60,7 +60,7 @@ def run(
     r: int = 32,
     max_seq_length: int = 12288,
     batch_size: int = 4,
-    gradient_accumulation_steps: int = 1,
+    gradient_accumulation_steps: int = 8,
     learning_rate: float = 3e-4,
     seed: int = 42,
     num_proc: int = 8,
@@ -77,28 +77,20 @@ def run(
         attn_implementation="flash_attention_2",
     )
     model.config.use_cache = False
+    model.enable_input_require_grads()
+    model.gradient_checkpointing_enable(
+        gradient_checkpointing_kwargs={"use_reentrant": False}
+    )
 
     peft_config = LoraConfig(
         r=r,
         lora_alpha=r * 2,
-        lora_dropout=0,
-        target_modules=[
-            "q_proj",
-            "k_proj",
-            "v_proj",
-            "o_proj",
-            "gate_proj",
-            "up_proj",
-            "down_proj",
-        ],
+        lora_dropout=0.05,
+        target_modules="all-linear",
         bias="none",
         task_type="CAUSAL_LM",
     )
     model = get_peft_model(model, peft_config)
-    model.enable_input_require_grads()
-    model.gradient_checkpointing_enable(
-        gradient_checkpointing_kwargs={"use_reentrant": True}
-    )
     model.print_trainable_parameters()
 
     def preprocess(example):
@@ -142,6 +134,7 @@ def run(
         save_strategy="epoch",
         per_device_train_batch_size=batch_size,
         gradient_accumulation_steps=gradient_accumulation_steps,
+        gradient_checkpointing=False,
         learning_rate=learning_rate,
         lr_scheduler_type="cosine",
         warmup_steps=warmup_steps,
@@ -150,6 +143,7 @@ def run(
         fp16=not torch.cuda.is_bf16_supported(),
         bf16=torch.cuda.is_bf16_supported(),
         remove_unused_columns=False,
+        use_liger_kernel=True,
     )
 
     trainer = Trainer(

@@ -12,12 +12,18 @@ dependencies = [
     "transformers>=5.2.0",
     "peft>=0.12",
     "trl>=0.18.2",
+    "liger-kernel>=0.5.0",
     "unsloth>=2026.4",
     "unsloth_zoo>=2026.4",
 ]
 
 [project.scripts]
 ft = "hackathon_judge_ft.cli:app"
+
+[tool.uv]
+override-dependencies = [
+    "triton; sys_platform == 'linux'",
+]
 
 [build-system]
 requires = ["hatchling"]
