@@ -47,6 +47,7 @@ def run(
         model_name=model_name,
         max_seq_length=8192,
         load_in_4bit=True,
+        dtype=torch.bfloat16 if torch.cuda.is_bf16_supported() else torch.float16,
     )
     model = PeftModel.from_pretrained(model, adapter_path)
     model.eval()

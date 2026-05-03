@@ -34,6 +34,7 @@ def run(
         model_name=model_name,
         max_seq_length=max_seq_length,
         load_in_4bit=True,
+        dtype=torch.bfloat16 if torch.cuda.is_bf16_supported() else torch.float16,
         full_finetuning=False,
     )
 
