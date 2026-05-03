@@ -139,6 +139,7 @@ def run(
         bf16=torch.cuda.is_bf16_supported(),
         max_length=max_seq_length,
         dataset_kwargs={"skip_prepare_dataset": True},
+        remove_unused_columns=False,
     )
 
     trainer = SFTTrainer(
