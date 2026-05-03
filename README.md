@@ -39,7 +39,11 @@ Use the same `--hackathon`, `--test-size`, and `--seed` for both `train` and `ev
 ```bash
 docker compose build
 HF_TOKEN=<token> docker compose run --rm train
-HF_TOKEN=<token> docker compose run --rm evaluate ./hackathon_judge_lora
+HF_TOKEN=<token> ADAPTER=./hackathon_judge_lora docker compose run --rm evaluate
+
+# Override compose defaults by passing ft subcommands without the leading `ft`
+HF_TOKEN=<token> docker compose run --rm train train --hackathon treehacks-2026 --epochs 2
+HF_TOKEN=<token> docker compose run --rm evaluate evaluate ./hackathon_judge_lora --hackathon treehacks-2026
 ```
 
 ## Dataset
