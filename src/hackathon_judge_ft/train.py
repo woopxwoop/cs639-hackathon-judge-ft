@@ -83,8 +83,6 @@ def run(
         gradient_checkpointing=True,
         per_device_train_batch_size=batch_size,
         gradient_accumulation_steps=gradient_accumulation_steps,
-        group_by_length=True,
-        length_column_name="n_tokens",
         learning_rate=learning_rate,
         lr_scheduler_type="cosine",
         warmup_ratio=0.03,
