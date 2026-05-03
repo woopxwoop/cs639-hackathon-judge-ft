@@ -33,11 +33,11 @@ def train(
     from hackathon_judge_ft import train as train_mod
 
     console.print(f"Loading dataset ({hackathon or 'all hackathons'})...")
-    df = data_mod.load_frontier_df(hackathon)
-    data_mod.validate(df)
-    console.print(f"  {len(df)} frontier rows loaded")
+    ds = data_mod.load_frontier(hackathon)
+    data_mod.validate(ds)
+    console.print(f"  {len(ds)} frontier rows loaded")
 
-    train_ds, _, train_pairs, _ = data_mod.split(df, test_size=test_size, seed=seed)
+    train_ds, _, train_pairs, _ = data_mod.split(ds, test_size=test_size, seed=seed)
     console.print(f"  train: {len(train_ds)} examples ({len(train_pairs)} unique pairs)")
 
     console.print(f"Training {model} | LoRA r={r} | {epochs} epoch(s)...")
@@ -64,8 +64,8 @@ def evaluate(
     from hackathon_judge_ft import evaluate as eval_mod
 
     console.print(f"Loading dataset ({hackathon or 'all hackathons'})...")
-    df = data_mod.load_frontier_df(hackathon)
-    _, test_ds, _, test_pairs = data_mod.split(df, test_size=test_size, seed=seed)
+    ds = data_mod.load_frontier(hackathon)
+    _, test_ds, _, test_pairs = data_mod.split(ds, test_size=test_size, seed=seed)
     console.print(f"  test: {len(test_ds)} examples ({len(test_pairs)} unique pairs)")
 
     console.print(f"Running inference with {model} + adapter {adapter}...")
@@ -75,5 +75,5 @@ def evaluate(
     typer.echo(f"position consistency: {metrics['position_consistency']*100:.0f}%  ({metrics['n_pairs']} pairs)")
 
     if output:
-        eval_mod.save_parquet(metrics["results_df"], output)
+        eval_mod.save_parquet(metrics["rows"], output)
         typer.echo(f"saved judgments → {output}")
