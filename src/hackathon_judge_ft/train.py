@@ -65,33 +65,26 @@ def run(
     seed: int = 42,
     num_proc: int = 8,
 ) -> None:
-    from unsloth import FastModel
     from transformers import Trainer, TrainingArguments
 
-    # unsloth_zoo generates Linear_peft_forward.py that references VARIANT_KWARG_KEYS
-    # from peft's module scope but forgets to import it; inject it after Unsloth has patched imports.
-    try:
-        import builtins
-        from peft.tuners.lora.layer import VARIANT_KWARG_KEYS
+    from transformers import AutoModelForCausalLM, AutoTokenizer
+    from peft import LoraConfig, get_peft_model
 
-        builtins.VARIANT_KWARG_KEYS = VARIANT_KWARG_KEYS
-    except ImportError:
-        pass
-
-    model, tokenizer = FastModel.from_pretrained(
-        model_name=model_name,
-        max_seq_length=max_seq_length,
-        load_in_4bit=False,
-        dtype=torch.bfloat16 if torch.cuda.is_bf16_supported() else torch.float16,
-        full_finetuning=False,
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    model = AutoModelForCausalLM.from_pretrained(
+        model_name,
+        torch_dtype=torch.bfloat16,
+        attn_implementation="flash_attention_2",
+    )
+    model.config.use_cache = False
+    model.gradient_checkpointing_enable(
+        gradient_checkpointing_kwargs={"use_reentrant": False}
     )
 
-    print(model)
-
-    model = FastModel.get_peft_model(
-        model,
+    peft_config = LoraConfig(
         r=r,
         lora_alpha=r * 2,
+        lora_dropout=0,
         target_modules=[
             "q_proj",
             "k_proj",
@@ -101,9 +94,11 @@ def run(
             "up_proj",
             "down_proj",
         ],
-        lora_dropout=0,
-        use_gradient_checkpointing="unsloth",
+        bias="none",
+        task_type="CAUSAL_LM",
     )
+    model = get_peft_model(model, peft_config)
+    model.print_trainable_parameters()
 
     def preprocess(example):
         text = tokenizer.apply_chat_template(
@@ -146,6 +141,7 @@ def run(
         save_strategy="epoch",
         per_device_train_batch_size=batch_size,
         gradient_accumulation_steps=gradient_accumulation_steps,
+        gradient_checkpointing=True,
         learning_rate=learning_rate,
         lr_scheduler_type="cosine",
         warmup_steps=warmup_steps,
