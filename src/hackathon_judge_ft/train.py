@@ -64,7 +64,7 @@ def run(
             enable_thinking=ENABLE_THINKING,
         )
         return {
-            "n_tokens": len(tokenizer(text, add_special_tokens=False)["input_ids"]),
+            "n_tokens": len(tokenizer(text=text, add_special_tokens=False)["input_ids"]),
         }
 
     train_tokenized = train_dataset.map(preprocess, num_proc=num_proc)
