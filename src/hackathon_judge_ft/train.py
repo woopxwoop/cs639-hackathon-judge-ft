@@ -14,17 +14,17 @@ def run(
     batch_size: int = 2,
     gradient_accumulation_steps: int = 4,
 ) -> None:
+    from unsloth import FastModel
+    from trl import SFTConfig, SFTTrainer
+
     # unsloth_zoo generates Linear_peft_forward.py that references VARIANT_KWARG_KEYS
-    # from peft's module scope but forgets to import it — inject it into builtins as a workaround
+    # from peft's module scope but forgets to import it; inject it after Unsloth has patched imports.
     try:
         import builtins
         from peft.tuners.lora.layer import VARIANT_KWARG_KEYS
         builtins.VARIANT_KWARG_KEYS = VARIANT_KWARG_KEYS
     except ImportError:
         pass
-
-    from unsloth import FastModel
-    from trl import SFTConfig, SFTTrainer
 
     model, tokenizer = FastModel.from_pretrained(
         model_name=model_name,
