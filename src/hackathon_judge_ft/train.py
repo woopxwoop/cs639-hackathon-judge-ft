@@ -6,6 +6,42 @@ from datasets import Dataset
 from hackathon_judge_ft.config import ENABLE_THINKING
 
 
+class CompletionOnlyCollator:
+    def __init__(self, tokenizer, response_template: str) -> None:
+        self.tokenizer = tokenizer
+        template_ids = tokenizer(text=response_template, add_special_tokens=False)["input_ids"]
+        self.response_token_ids = template_ids[0] if template_ids and isinstance(template_ids[0], list) else template_ids
+
+    @staticmethod
+    def _find_subsequence(sequence: list[int], subsequence: list[int]) -> int:
+        last_start = len(sequence) - len(subsequence)
+        for start in range(last_start + 1):
+            if sequence[start:start + len(subsequence)] == subsequence:
+                return start
+        return -1
+
+    def __call__(self, examples: list[dict]) -> dict[str, torch.Tensor]:
+        texts = [example["text"] for example in examples]
+        batch = self.tokenizer(
+            text=texts,
+            add_special_tokens=False,
+            padding=True,
+            return_tensors="pt",
+        )
+        labels = batch["input_ids"].clone()
+
+        for i, input_ids in enumerate(batch["input_ids"].tolist()):
+            response_start = self._find_subsequence(input_ids, self.response_token_ids)
+            if response_start < 0:
+                raise ValueError("response template not found in tokenized training example")
+            response_content_start = response_start + len(self.response_token_ids)
+            labels[i, :response_content_start] = -100
+            labels[i, batch["attention_mask"][i] == 0] = -100
+
+        batch["labels"] = labels
+        return batch
+
+
 def run(
     train_dataset: Dataset,
     model_name: str = "unsloth/Qwen3.5-4B",
@@ -64,6 +100,7 @@ def run(
             enable_thinking=ENABLE_THINKING,
         )
         return {
+            "text": text,
             "n_tokens": len(tokenizer(text=text, add_special_tokens=False)["input_ids"]),
         }
 
@@ -90,15 +127,15 @@ def run(
         report_to="none",
         fp16=not torch.cuda.is_bf16_supported(),
         bf16=torch.cuda.is_bf16_supported(),
-        assistant_only_loss=True,
         max_length=max_seq_length,
-        dataset_kwargs={"chat_template_kwargs": {"enable_thinking": ENABLE_THINKING}},
+        dataset_kwargs={"skip_prepare_dataset": True},
     )
 
     trainer = SFTTrainer(
         model=model,
         args=training_args,
         train_dataset=train_tokenized,
+        data_collator=CompletionOnlyCollator(tokenizer, response_template="<|im_start|>assistant\n"),
         processing_class=tokenizer,
     )
 
