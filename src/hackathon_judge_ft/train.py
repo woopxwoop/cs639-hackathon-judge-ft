@@ -50,7 +50,6 @@ def run(
             add_generation_prompt=False,
         )
         return {
-            "text": text,
             "n_tokens": len(tokenizer(text, add_special_tokens=False)["input_ids"]),
         }
 
@@ -74,15 +73,15 @@ def run(
         report_to="none",
         fp16=not torch.cuda.is_bf16_supported(),
         bf16=torch.cuda.is_bf16_supported(),
-        dataset_text_field="text",
+        assistant_only_loss=True,
+        max_length=max_seq_length,
     )
 
     trainer = SFTTrainer(
         model=model,
-        tokenizer=tokenizer,
         args=training_args,
         train_dataset=train_tokenized,
-        max_seq_length=max_seq_length,
+        processing_class=tokenizer,
     )
 
     trainer.train()
