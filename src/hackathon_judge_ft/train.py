@@ -58,7 +58,7 @@ def run(
     num_proc: int = 8,
 ) -> None:
     from unsloth import FastModel
-    from trl import SFTConfig, SFTTrainer
+    from transformers import Trainer, TrainingArguments
 
     # unsloth_zoo generates Linear_peft_forward.py that references VARIANT_KWARG_KEYS
     # from peft's module scope but forgets to import it; inject it after Unsloth has patched imports.
@@ -121,7 +121,7 @@ def run(
     warmup_steps = max(1, int(total_steps * 0.03))
     print(f"  warmup: {warmup_steps} steps (3% of {total_steps} total steps)")
 
-    training_args = SFTConfig(
+    training_args = TrainingArguments(
         output_dir=output_dir,
         seed=seed,
         data_seed=seed,
@@ -137,17 +137,14 @@ def run(
         report_to="none",
         fp16=not torch.cuda.is_bf16_supported(),
         bf16=torch.cuda.is_bf16_supported(),
-        max_length=max_seq_length,
-        dataset_kwargs={"skip_prepare_dataset": True},
         remove_unused_columns=False,
     )
 
-    trainer = SFTTrainer(
+    trainer = Trainer(
         model=model,
         args=training_args,
         train_dataset=train_tokenized,
         data_collator=CompletionOnlyCollator(tokenizer, response_template="<|im_start|>assistant\n"),
-        processing_class=tokenizer,
     )
 
     trainer.train()
