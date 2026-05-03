@@ -11,7 +11,7 @@ uv sync
 ## Usage
 
 ```bash
-# Train on all hackathons (1 epoch)
+# Train on all hackathons (3 epochs by default)
 ft train
 
 # Train on a single hackathon
@@ -39,12 +39,10 @@ Use the same `--hackathon`, `--test-size`, and `--seed` for both `train` and `ev
 ```bash
 docker compose build
 HF_TOKEN=<token> docker compose run --rm train
-HF_TOKEN=<token> ADAPTER=./hackathon_judge_lora docker compose run --rm evaluate
-
-# Override compose defaults by passing ft subcommands without the leading `ft`
-HF_TOKEN=<token> docker compose run --rm train train --hackathon treehacks-2026 --epochs 2
-HF_TOKEN=<token> docker compose run --rm evaluate evaluate ./hackathon_judge_lora --hackathon treehacks-2026
+HF_TOKEN=<token> docker compose run --rm evaluate evaluate ./hackathon_judge_lora --output ./judgments_sft.parquet
 ```
+
+Update the `train` service command in `docker-compose.yml` to match your exact run before sharing.
 
 ## Dataset
 

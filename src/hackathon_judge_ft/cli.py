@@ -22,7 +22,7 @@ def train(
         help="Single hackathon config (e.g. treehacks-2026). Default: all hackathons.",
     ),
     model: str = typer.Option("unsloth/Qwen3-4B", "--model"),
-    epochs: int = typer.Option(1, "--epochs", "-e"),
+    epochs: int = typer.Option(3, "--epochs", "-e"),
     r: int = typer.Option(32, "--r", help="LoRA rank"),
     max_seq_length: int = typer.Option(8192, "--max-seq-length"),
     output: Path = typer.Option(Path("./hackathon_judge_lora"), "--output", "-o"),

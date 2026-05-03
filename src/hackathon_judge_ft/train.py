@@ -36,7 +36,7 @@ def run(
         r=r,
         lora_alpha=r * 2,
         target_modules=["q_proj", "k_proj", "v_proj", "o_proj"],
-        lora_dropout=0,
+        lora_dropout=0.05,
         use_gradient_checkpointing="unsloth",
     )
 
