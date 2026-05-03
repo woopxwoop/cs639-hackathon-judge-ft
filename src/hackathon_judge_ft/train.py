@@ -96,6 +96,7 @@ def run(
         lora_alpha=r * 2,
         lora_dropout=0.05,
         target_modules="all-linear",
+        exclude_modules=["visual"],
         bias="none",
         task_type="CAUSAL_LM",
     )
