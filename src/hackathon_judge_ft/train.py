@@ -86,6 +86,11 @@ def run(
         full_finetuning=False,
     )
 
+    print("attn:", model.config._attn_implementation)
+    print("first layer cls:", type(model.model.layers[0]).name)
+    print("self_attn cls:", type(model.model.layers[0].self_attn).name)
+    print("mlp cls:", type(model.model.layers[0].mlp).name)
+
     model = FastModel.get_peft_model(
         model,
         r=r,
