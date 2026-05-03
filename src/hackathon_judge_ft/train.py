@@ -112,6 +112,9 @@ def run(
     n_dropped = n_before_filter - len(train_tokenized)
     if n_dropped:
         print(f"  dropped {n_dropped} training examples longer than {max_seq_length} tokens")
+    train_tokenized = train_tokenized.remove_columns(
+        [c for c in train_tokenized.column_names if c != "text"]
+    )
 
     steps_per_epoch = math.ceil(len(train_tokenized) / (batch_size * gradient_accumulation_steps))
     total_steps = steps_per_epoch * epochs
