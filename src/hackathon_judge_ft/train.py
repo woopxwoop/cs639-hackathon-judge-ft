@@ -83,7 +83,7 @@ def run(
         per_device_train_batch_size=batch_size,
         gradient_accumulation_steps=gradient_accumulation_steps,
         learning_rate=learning_rate,
-        warmup_steps=10,
+        warmup_ratio=0.03,
         logging_steps=5,
         report_to="none",
         fp16=not torch.cuda.is_bf16_supported(),
