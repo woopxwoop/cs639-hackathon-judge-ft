@@ -41,7 +41,15 @@ def run(
         model,
         r=r,
         lora_alpha=r * 2,
-        target_modules=["q_proj", "k_proj", "v_proj", "o_proj"],
+        target_modules=[
+            "q_proj",
+            "k_proj",
+            "v_proj",
+            "o_proj",
+            "gate_proj",
+            "up_proj",
+            "down_proj",
+        ],
         lora_dropout=0.05,
         use_gradient_checkpointing="unsloth",
     )
