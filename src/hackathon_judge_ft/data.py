@@ -45,6 +45,23 @@ def validate(ds: Dataset) -> None:
         print(f"  warning: {no_verdict} assistant messages have no parseable VERDICT line")
 
 
+def _winner_project_id(row: dict) -> str:
+    return row["project_a_id"] if row["verdict"] == "A" else row["project_b_id"]
+
+
+def _position_consistent_pair_ids(ds: Dataset) -> set[str]:
+    by_pair: dict[str, dict[str, str]] = {}
+    for row in ds:
+        by_pair.setdefault(row["pair_id"], {})[row["position"]] = _winner_project_id(row)
+
+    return {
+        pair_id
+        for pair_id, winners_by_position in by_pair.items()
+        if winners_by_position.get("ab") is not None
+        and winners_by_position.get("ab") == winners_by_position.get("ba")
+    }
+
+
 def split(
     ds: Dataset,
     test_size: float = 0.2,
@@ -55,8 +72,14 @@ def split(
         lambda r: r["verdict"] in ("A", "B")
         and VERDICT_RE.search(r["messages"][2]["content"]) is not None
     )
+    n_pairs_before_bias_filter = len(set(trainable["pair_id"]))
+    consistent_pairs = _position_consistent_pair_ids(trainable)
+    trainable = trainable.filter(lambda r: r["pair_id"] in consistent_pairs)
+    n_pairs_dropped = n_pairs_before_bias_filter - len(consistent_pairs)
+    if n_pairs_dropped:
+        print(f"  dropped {n_pairs_dropped} position-inconsistent pairs")
 
-    unique_pairs = list(set(trainable["pair_id"]))
+    unique_pairs = list(consistent_pairs)
     rng = random.Random(seed)
     rng.shuffle(unique_pairs)
 
