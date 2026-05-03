@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import math
+
 import torch
 from datasets import Dataset
 
@@ -111,6 +113,11 @@ def run(
     if n_dropped:
         print(f"  dropped {n_dropped} training examples longer than {max_seq_length} tokens")
 
+    steps_per_epoch = math.ceil(len(train_tokenized) / (batch_size * gradient_accumulation_steps))
+    total_steps = steps_per_epoch * epochs
+    warmup_steps = max(1, int(total_steps * 0.03))
+    print(f"  warmup: {warmup_steps} steps (3% of {total_steps} total steps)")
+
     training_args = SFTConfig(
         output_dir=output_dir,
         seed=seed,
@@ -122,7 +129,7 @@ def run(
         gradient_accumulation_steps=gradient_accumulation_steps,
         learning_rate=learning_rate,
         lr_scheduler_type="cosine",
-        warmup_ratio=0.03,
+        warmup_steps=warmup_steps,
         logging_steps=5,
         report_to="none",
         fp16=not torch.cuda.is_bf16_supported(),
