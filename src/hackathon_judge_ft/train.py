@@ -11,14 +11,20 @@ from hackathon_judge_ft.config import ENABLE_THINKING
 class CompletionOnlyCollator:
     def __init__(self, tokenizer, response_template: str) -> None:
         self.tokenizer = tokenizer
-        template_ids = tokenizer(text=response_template, add_special_tokens=False)["input_ids"]
-        self.response_token_ids = template_ids[0] if template_ids and isinstance(template_ids[0], list) else template_ids
+        template_ids = tokenizer(text=response_template, add_special_tokens=False)[
+            "input_ids"
+        ]
+        self.response_token_ids = (
+            template_ids[0]
+            if template_ids and isinstance(template_ids[0], list)
+            else template_ids
+        )
 
     @staticmethod
     def _find_subsequence(sequence: list[int], subsequence: list[int]) -> int:
         last_start = len(sequence) - len(subsequence)
         for start in range(last_start + 1):
-            if sequence[start:start + len(subsequence)] == subsequence:
+            if sequence[start : start + len(subsequence)] == subsequence:
                 return start
         return -1
 
@@ -35,7 +41,9 @@ class CompletionOnlyCollator:
         for i, input_ids in enumerate(batch["input_ids"].tolist()):
             response_start = self._find_subsequence(input_ids, self.response_token_ids)
             if response_start < 0:
-                raise ValueError("response template not found in tokenized training example")
+                raise ValueError(
+                    "response template not found in tokenized training example"
+                )
             response_content_start = response_start + len(self.response_token_ids)
             labels[i, :response_content_start] = -100
             labels[i, batch["attention_mask"][i] == 0] = -100
@@ -65,6 +73,7 @@ def run(
     try:
         import builtins
         from peft.tuners.lora.layer import VARIANT_KWARG_KEYS
+
         builtins.VARIANT_KWARG_KEYS = VARIANT_KWARG_KEYS
     except ImportError:
         pass
@@ -103,7 +112,9 @@ def run(
         )
         return {
             "text": text,
-            "n_tokens": len(tokenizer(text=text, add_special_tokens=False)["input_ids"]),
+            "n_tokens": len(
+                tokenizer(text=text, add_special_tokens=False)["input_ids"]
+            ),
         }
 
     train_tokenized = train_dataset.map(preprocess, num_proc=num_proc)
@@ -111,12 +122,16 @@ def run(
     train_tokenized = train_tokenized.filter(lambda r: r["n_tokens"] <= max_seq_length)
     n_dropped = n_before_filter - len(train_tokenized)
     if n_dropped:
-        print(f"  dropped {n_dropped} training examples longer than {max_seq_length} tokens")
+        print(
+            f"  dropped {n_dropped} training examples longer than {max_seq_length} tokens"
+        )
     train_tokenized = train_tokenized.remove_columns(
         [c for c in train_tokenized.column_names if c != "text"]
     )
 
-    steps_per_epoch = math.ceil(len(train_tokenized) / (batch_size * gradient_accumulation_steps))
+    steps_per_epoch = math.ceil(
+        len(train_tokenized) / (batch_size * gradient_accumulation_steps)
+    )
     total_steps = steps_per_epoch * epochs
     warmup_steps = max(1, int(total_steps * 0.03))
     print(f"  warmup: {warmup_steps} steps (3% of {total_steps} total steps)")
@@ -127,7 +142,6 @@ def run(
         data_seed=seed,
         num_train_epochs=epochs,
         save_strategy="epoch",
-        gradient_checkpointing=True,
         per_device_train_batch_size=batch_size,
         gradient_accumulation_steps=gradient_accumulation_steps,
         learning_rate=learning_rate,
@@ -144,7 +158,9 @@ def run(
         model=model,
         args=training_args,
         train_dataset=train_tokenized,
-        data_collator=CompletionOnlyCollator(tokenizer, response_template="<|im_start|>assistant\n"),
+        data_collator=CompletionOnlyCollator(
+            tokenizer, response_template="<|im_start|>assistant\n"
+        ),
     )
 
     trainer.train()
