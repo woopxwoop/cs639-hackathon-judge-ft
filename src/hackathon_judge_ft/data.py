@@ -8,6 +8,7 @@ from datasets import Dataset, load_dataset
 
 HF_REPO = "twangodev/devpost-hacks-judgments"
 FRONTIER_MODEL = "Qwen/Qwen3.5-27B"
+VERDICT_RE = re.compile(r"VERDICT:\s*(A|B|tie|invalid)", re.IGNORECASE)
 
 
 def load_frontier(hackathon: Optional[str] = None) -> Dataset:
@@ -36,10 +37,9 @@ def validate(ds: Dataset) -> None:
     if errors:
         raise ValueError("; ".join(errors))
 
-    verdict_re = re.compile(r"VERDICT:\s*(A|B|tie|invalid)", re.IGNORECASE)
     no_verdict = sum(
         1 for row in ds
-        if not verdict_re.search(row["messages"][2]["content"])
+        if not VERDICT_RE.search(row["messages"][2]["content"])
     )
     if no_verdict:
         print(f"  warning: {no_verdict} assistant messages have no parseable VERDICT line")
@@ -51,7 +51,10 @@ def split(
     seed: int = 42,
 ) -> tuple[Dataset, Dataset, set, set]:
     """Split by pair_id so both position-swapped rows land in the same split."""
-    trainable = ds.filter(lambda r: r["verdict"] in ("A", "B"))
+    trainable = ds.filter(
+        lambda r: r["verdict"] in ("A", "B")
+        and VERDICT_RE.search(r["messages"][2]["content"]) is not None
+    )
 
     unique_pairs = list(set(trainable["pair_id"]))
     rng = random.Random(seed)
