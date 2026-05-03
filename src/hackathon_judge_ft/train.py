@@ -77,9 +77,6 @@ def run(
         attn_implementation="flash_attention_2",
     )
     model.config.use_cache = False
-    model.gradient_checkpointing_enable(
-        gradient_checkpointing_kwargs={"use_reentrant": False}
-    )
 
     peft_config = LoraConfig(
         r=r,
@@ -98,6 +95,10 @@ def run(
         task_type="CAUSAL_LM",
     )
     model = get_peft_model(model, peft_config)
+    model.enable_input_require_grads()
+    model.gradient_checkpointing_enable(
+        gradient_checkpointing_kwargs={"use_reentrant": False}
+    )
     model.print_trainable_parameters()
 
     def preprocess(example):
@@ -141,7 +142,6 @@ def run(
         save_strategy="epoch",
         per_device_train_batch_size=batch_size,
         gradient_accumulation_steps=gradient_accumulation_steps,
-        gradient_checkpointing=True,
         learning_rate=learning_rate,
         lr_scheduler_type="cosine",
         warmup_steps=warmup_steps,
