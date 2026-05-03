@@ -26,6 +26,7 @@ def train(
     r: int = typer.Option(32, "--r", help="LoRA rank"),
     batch_size: int = typer.Option(32, "--batch-size"),
     gradient_accumulation_steps: int = typer.Option(1, "--gradient-accumulation-steps"),
+    learning_rate: float = typer.Option(3e-4, "--learning-rate", "--lr"),
     max_seq_length: int = typer.Option(8192, "--max-seq-length"),
     output: Path = typer.Option(Path("./hackathon_judge_lora"), "--output", "-o"),
     test_size: float = typer.Option(0.2, "--test-size"),
@@ -44,7 +45,7 @@ def train(
     console.print(f"  train: {len(train_ds)} examples ({len(train_pairs)} unique pairs)")
 
     console.print(
-        f"Training {model} | LoRA r={r} | batch={batch_size} x grad_accum={gradient_accumulation_steps} | {epochs} epoch(s)..."
+        f"Training {model} | LoRA r={r} | batch={batch_size} x grad_accum={gradient_accumulation_steps} | lr={learning_rate:g} | {epochs} epoch(s)..."
     )
     train_mod.run(
         train_ds,
@@ -54,6 +55,7 @@ def train(
         r=r,
         batch_size=batch_size,
         gradient_accumulation_steps=gradient_accumulation_steps,
+        learning_rate=learning_rate,
         max_seq_length=max_seq_length,
     )
 
