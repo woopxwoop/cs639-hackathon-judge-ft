@@ -19,7 +19,7 @@ x-base: &base
 services:
   train:
     <<: *base
-    command: ["train", "--hackathon", "${HACKATHON:-}", "--epochs", "${EPOCHS:-3}", "--batch-size", "${BATCH_SIZE:-2}", "--gradient-accumulation-steps", "${GRAD_ACCUM:-4}"]
+    command: ["train", "--hackathon", "${HACKATHON:-}", "--epochs", "${EPOCHS:-3}", "--batch-size", "${BATCH_SIZE:-32}", "--gradient-accumulation-steps", "${GRAD_ACCUM:-1}"]
 
   evaluate:
     <<: *base

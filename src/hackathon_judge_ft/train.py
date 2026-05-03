@@ -11,8 +11,8 @@ def run(
     epochs: int = 3,
     r: int = 32,
     max_seq_length: int = 8192,
-    batch_size: int = 2,
-    gradient_accumulation_steps: int = 4,
+    batch_size: int = 32,
+    gradient_accumulation_steps: int = 1,
 ) -> None:
     from unsloth import FastModel
     from trl import SFTConfig, SFTTrainer
